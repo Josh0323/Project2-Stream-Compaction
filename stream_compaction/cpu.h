@@ -11,5 +11,8 @@ namespace StreamCompaction {
         int compactWithoutScan(int n, int *odata, const int *idata);
 
         int compactWithScan(int n, int *odata, const int *idata);
+
+        // std::sort baseline for the radix sort tests and benchmarks.
+        void sort(int n, int *odata, const int *idata);
     }
 }

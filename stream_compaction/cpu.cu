@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdio>
 #include <vector>
 #include "cpu.h"
@@ -83,6 +84,13 @@ namespace StreamCompaction {
             int count = n > 0 ? indices[n - 1] + bools[n - 1] : 0;
             timer().endCpuTimer();
             return count;
+        }
+
+        void sort(int n, int *odata, const int *idata) {
+            std::copy(idata, idata + std::max(n, 0), odata);
+            timer().startCpuTimer();
+            std::sort(odata, odata + std::max(n, 0));
+            timer().endCpuTimer();
         }
     }
 }

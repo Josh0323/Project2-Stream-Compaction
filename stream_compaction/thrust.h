@@ -10,5 +10,8 @@ namespace StreamCompaction {
 
         // Not required: thrust::remove_if compaction, for comparing against Efficient::compact.
         int compact(int n, int *odata, const int *idata);
+
+        // thrust::sort, as a GPU baseline for the radix sort.
+        void sort(int n, int *odata, const int *idata);
     }
 }
