@@ -13,8 +13,10 @@ namespace StreamCompaction {
             return timer;
         }
 
-        int blockSize = 256;
-        int logNumBanks = 4;
+        // Tuned on a Tesla T4 (see README): 128 threads keeps 8 blocks active per SM, and
+        // 32 banks (the T4's warp size) beat the 16 the chapter used on 8 Series cards.
+        int blockSize = 128;
+        int logNumBanks = 5;
 
         /**
          * Shared memory slot for logical index i when avoiding bank conflicts: leaves a gap
