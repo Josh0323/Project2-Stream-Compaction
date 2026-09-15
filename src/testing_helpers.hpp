@@ -57,6 +57,15 @@ void genArray(int n, int *a, int maxval) {
     }
 }
 
+// Values across the whole int range, negatives included (rand() alone only gives 31 bits).
+void genSignedArray(int n, int *a) {
+    srand(time(nullptr));
+
+    for (int i = 0; i < n; i++) {
+        a[i] = static_cast<int>((static_cast<unsigned>(rand()) << 16) ^ static_cast<unsigned>(rand()));
+    }
+}
+
 void printArray(int n, int *a, bool abridged = false) {
     printf("    [ ");
     for (int i = 0; i < n; i++) {

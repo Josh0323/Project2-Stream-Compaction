@@ -29,10 +29,12 @@ include_directories(.)
 
 set(headers
     "src/testing_helpers.hpp"
+    "src/perf.h"
     )
 
 set(sources
     "src/main.cpp"
+    "src/perf.cpp"
     )
 
 list(SORT headers)
