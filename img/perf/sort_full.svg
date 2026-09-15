@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="492" viewBox="0 0 760 492" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect width="760" height="492" rx="8" fill="#fcfcfb"/>
+<text x="72" y="28" font-size="16" font-weight="600" fill="#0b0b0b">Sorting: full signed int range</text>
+<text x="72" y="48" font-size="12" fill="#52514e">Power-of-two sizes, median of 7 runs (Tesla T4)</text>
+<line x1="72" y1="68" x2="94" y2="68" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="83.0" cy="68.0" r="4" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<text x="102" y="72" font-size="12" fill="#52514e">cpu-std-sort</text>
+<line x1="206.4" y1="68" x2="228.4" y2="68" stroke="#1baf7a" stroke-width="2"/>
+<polygon points="217.4,63.0 221.7,70.5 213.1,70.5" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<text x="236.4" y="72" font-size="12" fill="#52514e">radix</text>
+<line x1="290.4" y1="68" x2="312.4" y2="68" stroke="#e87ba4" stroke-width="2"/>
+<polygon points="301.4,73.0 297.1,65.5 305.7,65.5" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<text x="320.4" y="72" font-size="12" fill="#52514e">thrust-sort</text>
+<line x1="72" y1="434.0" x2="736" y2="434.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="438.0" font-size="11" fill="#898781" text-anchor="end">0.001</text>
+<line x1="72" y1="377.0" x2="736" y2="377.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="381.0" font-size="11" fill="#898781" text-anchor="end">0.01</text>
+<line x1="72" y1="320.0" x2="736" y2="320.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="324.0" font-size="11" fill="#898781" text-anchor="end">0.1</text>
+<line x1="72" y1="263.0" x2="736" y2="263.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="267.0" font-size="11" fill="#898781" text-anchor="end">1</text>
+<line x1="72" y1="206.0" x2="736" y2="206.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="210.0" font-size="11" fill="#898781" text-anchor="end">10</text>
+<line x1="72" y1="149.0" x2="736" y2="149.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="153.0" font-size="11" fill="#898781" text-anchor="end">100</text>
+<line x1="72" y1="92.0" x2="736" y2="92.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="96.0" font-size="11" fill="#898781" text-anchor="end">1000</text>
+<line x1="72" y1="434" x2="736" y2="434" stroke="#c3c2b7" stroke-width="1"/>
+<line x1="72.0" y1="434" x2="72.0" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="72.0" y="452" font-size="11" fill="#898781" text-anchor="middle">256</text>
+<line x1="160.5" y1="434" x2="160.5" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="160.5" y="452" font-size="11" fill="#898781" text-anchor="middle">1K</text>
+<line x1="249.1" y1="434" x2="249.1" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="249.1" y="452" font-size="11" fill="#898781" text-anchor="middle">4K</text>
+<line x1="337.6" y1="434" x2="337.6" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="337.6" y="452" font-size="11" fill="#898781" text-anchor="middle">16K</text>
+<line x1="426.1" y1="434" x2="426.1" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="426.1" y="452" font-size="11" fill="#898781" text-anchor="middle">64K</text>
+<line x1="514.7" y1="434" x2="514.7" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="514.7" y="452" font-size="11" fill="#898781" text-anchor="middle">256K</text>
+<line x1="603.2" y1="434" x2="603.2" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="603.2" y="452" font-size="11" fill="#898781" text-anchor="middle">1M</text>
+<line x1="691.7" y1="434" x2="691.7" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="691.7" y="452" font-size="11" fill="#898781" text-anchor="middle">4M</text>
+<line x1="780.3" y1="434" x2="780.3" y2="438" stroke="#c3c2b7" stroke-width="1"/>
+<text x="780.3" y="452" font-size="11" fill="#898781" text-anchor="middle">16M</text>
+<text x="404.0" y="480" font-size="12" fill="#52514e" text-anchor="middle">Array size (elements)</text>
+<text transform="translate(16 263.0) rotate(-90)" font-size="12" fill="#52514e" text-anchor="middle">Time (ms, log scale)</text>
+<path d="M72.0,401.7 L116.3,376.1 L160.5,346.8 L204.8,321.9 L249.1,302.4 L293.3,282.4 L337.6,264.7 L381.9,245.2 L426.1,225.8 L470.4,207.4 L514.7,189.3 L558.9,171.1 L603.2,152.0 L647.5,133.8 L691.7,115.8 L736.0,97.5" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="72.0" cy="401.7" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 256 -&gt; 0.004 ms</title>
+<circle cx="116.3" cy="376.1" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 512 -&gt; 0.010 ms</title>
+<circle cx="160.5" cy="346.8" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 1K -&gt; 0.034 ms</title>
+<circle cx="204.8" cy="321.9" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 2K -&gt; 0.092 ms</title>
+<circle cx="249.1" cy="302.4" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 4K -&gt; 0.204 ms</title>
+<circle cx="293.3" cy="282.4" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 8K -&gt; 0.457 ms</title>
+<circle cx="337.6" cy="264.7" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 16K -&gt; 0.934 ms</title>
+<circle cx="381.9" cy="245.2" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 32K -&gt; 2.053 ms</title>
+<circle cx="426.1" cy="225.8" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 64K -&gt; 4.499 ms</title>
+<circle cx="470.4" cy="207.4" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 128K -&gt; 9.439 ms</title>
+<circle cx="514.7" cy="189.3" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 256K -&gt; 19.595 ms</title>
+<circle cx="558.9" cy="171.1" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 512K -&gt; 40.953 ms</title>
+<circle cx="603.2" cy="152.0" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 1M -&gt; 88.764 ms</title>
+<circle cx="647.5" cy="133.8" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 2M -&gt; 185.117 ms</title>
+<circle cx="691.7" cy="115.8" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 4M -&gt; 382.662 ms</title>
+<circle cx="736.0" cy="97.5" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#2a78d6"/>
+<title>cpu-std-sort: 8M -&gt; 801.595 ms</title>
+<path d="M72.0,240.3 L116.3,238.4 L160.5,237.2 L204.8,235.4 L249.1,233.7 L293.3,232.4 L337.6,231.5 L381.9,229.9 L426.1,228.2 L470.4,226.1 L514.7,224.5 L558.9,207.2 L603.2,191.7 L647.5,174.6 L691.7,157.0 L736.0,139.5" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="72.0,234.7 76.9,243.1 67.1,243.1" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 256 -&gt; 2.504 ms</title>
+<polygon points="116.3,232.7 121.1,241.2 111.4,241.2" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 512 -&gt; 2.704 ms</title>
+<polygon points="160.5,231.5 165.4,240.0 155.7,240.0" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 1K -&gt; 2.841 ms</title>
+<polygon points="204.8,229.7 209.7,238.2 199.9,238.2" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 2K -&gt; 3.054 ms</title>
+<polygon points="249.1,228.1 253.9,236.6 244.2,236.6" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 4K -&gt; 3.261 ms</title>
+<polygon points="293.3,226.8 298.2,235.2 288.5,235.2" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 8K -&gt; 3.444 ms</title>
+<polygon points="337.6,225.9 342.5,234.3 332.7,234.3" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 16K -&gt; 3.568 ms</title>
+<polygon points="381.9,224.2 386.7,232.7 377.0,232.7" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 32K -&gt; 3.814 ms</title>
+<polygon points="426.1,222.6 431.0,231.0 421.3,231.0" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 64K -&gt; 4.083 ms</title>
+<polygon points="470.4,220.5 475.3,228.9 465.5,228.9" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 128K -&gt; 4.442 ms</title>
+<polygon points="514.7,218.8 519.5,227.3 509.8,227.3" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 256K -&gt; 4.741 ms</title>
+<polygon points="558.9,201.6 563.8,210.0 554.1,210.0" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 512K -&gt; 9.515 ms</title>
+<polygon points="603.2,186.1 608.1,194.5 598.3,194.5" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 1M -&gt; 17.820 ms</title>
+<polygon points="647.5,169.0 652.3,177.5 642.6,177.5" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 2M -&gt; 35.486 ms</title>
+<polygon points="691.7,151.4 696.6,159.9 686.9,159.9" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 4M -&gt; 72.241 ms</title>
+<polygon points="736.0,133.9 740.9,142.3 731.1,142.3" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>radix: 8M -&gt; 146.670 ms</title>
+<path d="M72.0,343.4 L116.3,344.7 L160.5,344.7 L204.8,342.8 L249.1,343.2 L293.3,326.8 L337.6,326.9 L381.9,325.2 L426.1,323.5 L470.4,322.0 L514.7,289.3 L558.9,277.0 L603.2,265.6 L647.5,264.3 L691.7,253.8 L736.0,240.2" fill="none" stroke="#e87ba4" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="72.0,349.0 67.1,340.6 76.9,340.6" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 256 -&gt; 0.039 ms</title>
+<polygon points="116.3,350.3 111.4,341.8 121.1,341.8" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 512 -&gt; 0.037 ms</title>
+<polygon points="160.5,350.3 155.7,341.9 165.4,341.9" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 1K -&gt; 0.037 ms</title>
+<polygon points="204.8,348.4 199.9,340.0 209.7,340.0" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 2K -&gt; 0.040 ms</title>
+<polygon points="249.1,348.8 244.2,340.3 253.9,340.3" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 4K -&gt; 0.039 ms</title>
+<polygon points="293.3,332.4 288.5,324.0 298.2,324.0" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 8K -&gt; 0.076 ms</title>
+<polygon points="337.6,332.5 332.7,324.1 342.5,324.1" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 16K -&gt; 0.076 ms</title>
+<polygon points="381.9,330.9 377.0,322.4 386.7,322.4" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 32K -&gt; 0.081 ms</title>
+<polygon points="426.1,329.1 421.3,320.7 431.0,320.7" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 64K -&gt; 0.087 ms</title>
+<polygon points="470.4,327.7 465.5,319.2 475.3,319.2" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 128K -&gt; 0.092 ms</title>
+<polygon points="514.7,294.9 509.8,286.5 519.5,286.5" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 256K -&gt; 0.346 ms</title>
+<polygon points="558.9,282.6 554.1,274.2 563.8,274.2" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 512K -&gt; 0.568 ms</title>
+<polygon points="603.2,271.2 598.3,262.8 608.1,262.8" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 1M -&gt; 0.901 ms</title>
+<polygon points="647.5,269.9 642.6,261.5 652.3,261.5" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 2M -&gt; 0.950 ms</title>
+<polygon points="691.7,259.5 686.9,251.0 696.6,251.0" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 4M -&gt; 1.449 ms</title>
+<polygon points="736.0,245.8 731.1,237.4 740.9,237.4" stroke="#fcfcfb" stroke-width="2" fill="#e87ba4"/>
+<title>thrust-sort: 8M -&gt; 2.515 ms</title>
+</svg>

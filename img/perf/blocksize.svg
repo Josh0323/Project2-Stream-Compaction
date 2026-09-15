@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="514" viewBox="0 0 760 514" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect width="760" height="514" rx="8" fill="#fcfcfb"/>
+<text x="72" y="28" font-size="16" font-weight="600" fill="#0b0b0b">Block size tuning</text>
+<text x="72" y="48" font-size="12" fill="#52514e">n = 16M elements, median of 7 runs (Tesla T4)</text>
+<line x1="72" y1="68" x2="94" y2="68" stroke="#eb6834" stroke-width="2"/>
+<rect x="79.6" y="64.6" width="6.8" height="6.8" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<text x="102" y="72" font-size="12" fill="#52514e">naive</text>
+<line x1="156.0" y1="68" x2="178.0" y2="68" stroke="#1baf7a" stroke-width="2"/>
+<polygon points="167.0,63.0 171.3,70.5 162.7,70.5" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<text x="186.0" y="72" font-size="12" fill="#52514e">efficient-unoptimized</text>
+<line x1="355.20000000000005" y1="68" x2="377.20000000000005" y2="68" stroke="#eda100" stroke-width="2"/>
+<polygon points="371.4,68.0 366.2,73.2 361.0,68.0 366.2,62.8" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<text x="385.20000000000005" y="72" font-size="12" fill="#52514e">efficient</text>
+<line x1="468.00000000000006" y1="68" x2="490.00000000000006" y2="68" stroke="#e34948" stroke-width="2"/>
+<circle cx="479.0" cy="68.0" r="4" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<text x="498.00000000000006" y="72" font-size="12" fill="#52514e">efficient-compact</text>
+<line x1="72" y1="90" x2="94" y2="90" stroke="#008300" stroke-width="2"/>
+<polygon points="87.6,90.0 85.3,94.0 80.7,94.0 78.4,90.0 80.7,86.0 85.3,86.0" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<text x="102" y="94" font-size="12" fill="#52514e">shared-naive</text>
+<line x1="206.4" y1="90" x2="228.4" y2="90" stroke="#4a3aa7" stroke-width="2"/>
+<polygon points="217.4,85.2 222.0,88.5 220.2,93.9 214.6,93.9 212.8,88.5" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<text x="236.4" y="94" font-size="12" fill="#52514e">shared-efficient</text>
+<line x1="72" y1="456.0" x2="736" y2="456.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="460.0" font-size="11" fill="#898781" text-anchor="end">1</text>
+<line x1="72" y1="285.0" x2="736" y2="285.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="289.0" font-size="11" fill="#898781" text-anchor="end">10</text>
+<line x1="72" y1="114.0" x2="736" y2="114.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="64" y="118.0" font-size="11" fill="#898781" text-anchor="end">100</text>
+<line x1="72" y1="456" x2="736" y2="456" stroke="#c3c2b7" stroke-width="1"/>
+<line x1="72.0" y1="456" x2="72.0" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="72.0" y="474" font-size="11" fill="#898781" text-anchor="middle">16</text>
+<line x1="182.7" y1="456" x2="182.7" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="182.7" y="474" font-size="11" fill="#898781" text-anchor="middle">32</text>
+<line x1="293.3" y1="456" x2="293.3" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="293.3" y="474" font-size="11" fill="#898781" text-anchor="middle">64</text>
+<line x1="404.0" y1="456" x2="404.0" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="404.0" y="474" font-size="11" fill="#898781" text-anchor="middle">128</text>
+<line x1="514.7" y1="456" x2="514.7" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="514.7" y="474" font-size="11" fill="#898781" text-anchor="middle">256</text>
+<line x1="625.3" y1="456" x2="625.3" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="625.3" y="474" font-size="11" fill="#898781" text-anchor="middle">512</text>
+<line x1="736.0" y1="456" x2="736.0" y2="460" stroke="#c3c2b7" stroke-width="1"/>
+<text x="736.0" y="474" font-size="11" fill="#898781" text-anchor="middle">1024</text>
+<text x="404.0" y="502" font-size="12" fill="#52514e" text-anchor="middle">Threads per block</text>
+<text transform="translate(16 285.0) rotate(-90)" font-size="12" fill="#52514e" text-anchor="middle">Time (ms, log scale)</text>
+<path d="M72.0,193.0 L182.7,241.0 L293.3,258.5 L404.0,258.7 L514.7,258.8 L625.3,258.8 L736.0,258.9" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="68.2" y="189.2" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 16 -&gt; 34.509 ms</title>
+<rect x="178.8" y="237.2" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 32 -&gt; 18.086 ms</title>
+<rect x="289.5" y="254.7" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 64 -&gt; 14.289 ms</title>
+<rect x="400.2" y="254.9" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 128 -&gt; 14.253 ms</title>
+<rect x="510.8" y="254.9" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 256 -&gt; 14.239 ms</title>
+<rect x="621.5" y="254.9" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 512 -&gt; 14.237 ms</title>
+<rect x="732.2" y="255.0" width="7.6" height="7.6" rx="1.5" stroke="#fcfcfb" stroke-width="2" fill="#eb6834"/>
+<title>naive: 1024 -&gt; 14.221 ms</title>
+<path d="M72.0,165.3 L182.7,213.9 L293.3,259.4 L404.0,280.3 L514.7,279.0 L625.3,271.1 L736.0,259.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="72.0,159.7 76.9,168.2 67.1,168.2" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 16 -&gt; 50.091 ms</title>
+<polygon points="182.7,208.2 187.5,216.7 177.8,216.7" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 32 -&gt; 26.062 ms</title>
+<polygon points="293.3,253.7 298.2,262.2 288.5,262.2" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 64 -&gt; 14.123 ms</title>
+<polygon points="404.0,274.7 408.9,283.1 399.1,283.1" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 128 -&gt; 10.656 ms</title>
+<polygon points="514.7,273.4 519.5,281.8 509.8,281.8" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 256 -&gt; 10.838 ms</title>
+<polygon points="625.3,265.4 630.2,273.9 620.5,273.9" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 512 -&gt; 12.063 ms</title>
+<polygon points="736.0,253.5 740.9,261.9 731.1,261.9" stroke="#fcfcfb" stroke-width="2" fill="#1baf7a"/>
+<title>efficient-unoptimized: 1024 -&gt; 14.174 ms</title>
+<path d="M72.0,307.8 L182.7,307.0 L293.3,304.1 L404.0,304.2 L514.7,304.7 L625.3,304.2 L736.0,301.9" fill="none" stroke="#eda100" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="77.8,307.8 72.0,313.6 66.2,307.8 72.0,301.9" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 16 -&gt; 7.361 ms</title>
+<polygon points="188.5,307.0 182.7,312.8 176.8,307.0 182.7,301.1" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 32 -&gt; 7.441 ms</title>
+<polygon points="299.2,304.1 293.3,309.9 287.5,304.1 293.3,298.2" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 64 -&gt; 7.734 ms</title>
+<polygon points="409.9,304.2 404.0,310.1 398.1,304.2 404.0,298.4" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 128 -&gt; 7.721 ms</title>
+<polygon points="520.5,304.7 514.7,310.5 508.8,304.7 514.7,298.8" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 256 -&gt; 7.673 ms</title>
+<polygon points="631.2,304.2 625.3,310.1 619.5,304.2 625.3,298.4" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 512 -&gt; 7.721 ms</title>
+<polygon points="741.9,301.9 736.0,307.7 730.1,301.9 736.0,296.0" stroke="#fcfcfb" stroke-width="2" fill="#eda100"/>
+<title>efficient: 1024 -&gt; 7.966 ms</title>
+<path d="M72.0,276.5 L182.7,285.6 L293.3,285.5 L404.0,286.0 L514.7,286.3 L625.3,286.0 L736.0,284.1" fill="none" stroke="#e34948" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="72.0" cy="276.5" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 16 -&gt; 11.212 ms</title>
+<circle cx="182.7" cy="285.6" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 32 -&gt; 9.923 ms</title>
+<circle cx="293.3" cy="285.5" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 64 -&gt; 9.931 ms</title>
+<circle cx="404.0" cy="286.0" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 128 -&gt; 9.870 ms</title>
+<circle cx="514.7" cy="286.3" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 256 -&gt; 9.832 ms</title>
+<circle cx="625.3" cy="286.0" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 512 -&gt; 9.867 ms</title>
+<circle cx="736.0" cy="284.1" r="4.5" stroke="#fcfcfb" stroke-width="2" fill="#e34948"/>
+<title>efficient-compact: 1024 -&gt; 10.123 ms</title>
+<path d="M72.0,363.3 L182.7,413.7 L293.3,442.2 L404.0,443.2 L514.7,440.3 L625.3,431.9 L736.0,415.9" fill="none" stroke="#008300" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="77.2,363.3 74.6,367.8 69.4,367.8 66.8,363.3 69.4,358.8 74.6,358.8" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 16 -&gt; 3.484 ms</title>
+<polygon points="187.8,413.7 185.3,418.2 180.1,418.2 177.5,413.7 180.1,409.3 185.3,409.3" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 32 -&gt; 1.766 ms</title>
+<polygon points="298.5,442.2 295.9,446.7 290.7,446.7 288.2,442.2 290.7,437.8 295.9,437.8" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 64 -&gt; 1.204 ms</title>
+<polygon points="409.2,443.2 406.6,447.7 401.4,447.7 398.8,443.2 401.4,438.8 406.6,438.8" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 128 -&gt; 1.187 ms</title>
+<polygon points="519.8,440.3 517.3,444.8 512.1,444.8 509.5,440.3 512.1,435.8 517.3,435.8" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 256 -&gt; 1.236 ms</title>
+<polygon points="630.5,431.9 627.9,436.4 622.7,436.4 620.2,431.9 622.7,427.4 627.9,427.4" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 512 -&gt; 1.383 ms</title>
+<polygon points="741.2,415.9 738.6,420.4 733.4,420.4 730.8,415.9 733.4,411.4 738.6,411.4" stroke="#fcfcfb" stroke-width="2" fill="#008300"/>
+<title>shared-naive: 1024 -&gt; 1.716 ms</title>
+<path d="M72.0,373.6 L182.7,415.5 L293.3,438.8 L404.0,443.2 L514.7,440.0 L625.3,431.9 L736.0,421.4" fill="none" stroke="#4a3aa7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="72.0,368.2 77.1,372.0 75.2,378.0 68.8,378.0 66.9,372.0" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 16 -&gt; 3.032 ms</title>
+<polygon points="182.7,410.1 187.8,413.8 185.8,419.9 179.5,419.9 177.5,413.8" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 32 -&gt; 1.725 ms</title>
+<polygon points="293.3,433.4 298.5,437.1 296.5,443.1 290.2,443.1 288.2,437.1" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 64 -&gt; 1.261 ms</title>
+<polygon points="404.0,437.8 409.1,441.5 407.2,447.6 400.8,447.6 398.9,441.5" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 128 -&gt; 1.188 ms</title>
+<polygon points="514.7,434.6 519.8,438.4 517.8,444.4 511.5,444.4 509.5,438.4" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 256 -&gt; 1.240 ms</title>
+<polygon points="625.3,426.5 630.5,430.3 628.5,436.3 622.2,436.3 620.2,430.3" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 512 -&gt; 1.383 ms</title>
+<polygon points="736.0,416.0 741.1,419.7 739.2,425.8 732.8,425.8 730.9,419.7" stroke="#fcfcfb" stroke-width="2" fill="#4a3aa7"/>
+<title>shared-efficient: 1024 -&gt; 1.594 ms</title>
+</svg>
