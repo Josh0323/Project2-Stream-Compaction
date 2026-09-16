@@ -95,8 +95,9 @@ are full, and global memory timings are flat to within noise.
 | 16,777,216 | 13.49 | 14.24 | 10.84 | 7.68 | **0.86** | 1.19 | 1.15 |
 | 67,108,864 | 54.75 | 63.08 | 45.45 | 31.04 | **2.60** | 4.69 | 4.53 |
 
-Times in ms. Non-power-of-two sizes (2^k − 3) are within noise of the power-of-two numbers,
-because both pad to the same power of two. All raw numbers are in `perf/data/scan.csv`.
+Times in ms. The non-power-of-two sizes used here (2^k − 3) are within noise of the
+power-of-two numbers, because they pad to the *same* power of two. That's misleading on its own;
+see the stair-step below. All raw numbers are in `perf/data/scan.csv`.
 
 **What's going on:**
 
@@ -128,6 +129,31 @@ because both pad to the same power of two. All raw numbers are in `perf/data/sca
   slower than the non-power-of-two run right after it. The trace shows the first launch in a
   module paying `cuLibraryLoadData` / `cuLibraryGetKernel` to load and look up the kernel.
 
+### Non-power-of-two sizes: the padding stair-step
+
+![Non-power-of-two stair-step](img/perf/npot.svg)
+
+Both work-efficient scans round n up to the next power of two, so their cost is set by the padded
+size, not by n. Sweeping sizes on a linear grid shows flat runs with a doubling at each boundary:
+
+| n | Padded to | CPU | Efficient | Efficient (unopt.) | Shared efficient | Thrust |
+|---:|---:|---:|---:|---:|---:|---:|
+| 4,000,000 | 2^22 | 13.70 | 1.96 | 8.60 | 1.81 | 29.04 |
+| 4,250,000 | 2^23 | 14.42 | 3.91 | 17.63 | 1.94 | 30.95 |
+| jump | | 1.05× | **2.00×** | **2.05×** | 1.07× | 1.07× |
+
+Adding 250,000 elements (6%) exactly doubles the work-efficient scan's runtime, and the same
+happens at 8.25M → 8.5M (3.91 → 7.79 ms). Everything that doesn't pad — the CPU, Thrust, and the
+shared memory scan, which only pads the last block of each level — grows smoothly. Worst case, a
+padded scan does almost twice the necessary work; picking 2^k − 3 as "the" non-power-of-two test
+size hides that completely.
+
+> The numbers in this section come from a later session, when the VM (a preemptible instance)
+> was running with about 5× less memory bandwidth, so the CPU and Thrust values here are inflated
+> and **not** comparable to the tables above. The comparison that matters is within this one
+> session: the ratios at the boundary. GPU-side `efficient` measured the same in both sessions
+> (1.96 ms vs. 1.85 ms at 4M), which is why the stair-step itself is trustworthy.
+
 ### Stream compaction
 
 ![Compaction comparison](img/perf/compact.svg)
@@ -146,6 +172,31 @@ touches two extra arrays, which makes it about 1.5× slower. On the GPU there's 
 so the work-efficient compaction is 5.5× faster than the best CPU version at 64M. It's still 14× slower
 than Thrust, because it pays for the global memory scan plus map, scatter, a device-to-device copy,
 and two synchronous readbacks for the count.
+
+### Kernel-level profiling (Nsight Compute)
+
+`ncu -k regex:<kernel> --launch-count 1 --section SpeedOfLight --section Occupancy --section LaunchStats`
+on the first (largest) launch of each kernel, at n = 2^22:
+
+| Kernel | Block | Regs/thread | Shared/block | Grid | Waves/SM | DRAM throughput | Compute throughput |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `kernUpSweep` (ours, global) | 256 | 16 | 0 | 8192 | 51.2 | 80.96% | 6.42% |
+| `kernEfficientScanBlock` (ours, shared) | 128 | 24 | 1.05 KB | 16384 | 51.2 | 74.06% | 55.17% |
+| CUB `DeviceScanKernel` (Thrust) | 128 | 64 | 7.70 KB | 2185 | 6.83 | 79.25% | 22.35% |
+
+All three are **memory bound**: DRAM throughput sits at 74–81% of peak while compute throughput
+is far lower. That confirms the bandwidth argument above — there's no point micro-optimizing the
+arithmetic. `kernUpSweep` is the extreme case: one add per thread, 6.4% compute throughput,
+and it still saturates DRAM.
+
+The interesting difference is **waves per SM**: our kernels launch 51.2 waves of blocks to cover
+the array, CUB only 6.83. CUB's kernel uses 64 registers and 7.7 KB of shared memory per block to
+process many elements per thread (a serial scan in registers, then a block scan — the technique
+from 39.2.5), so it moves the same data with far fewer blocks and one pass over memory. Our
+work-efficient scan re-reads and re-writes the whole array once per level instead.
+
+Theoretical occupancy is 100% for all three. Occupancy isn't the limiter here; the number of
+passes over global memory is.
 
 ## Extra credit, Part 5: why the "efficient" scan is slow
 

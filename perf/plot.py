@@ -210,6 +210,15 @@ def main():
                    [(k, g[k]) for k in order if k in g], "Array size (elements)", "Time (ms, log scale)",
                    x_ticks=size_ticks(sort), x_tick_label=size_label)
 
+    npot = read("npot.csv")
+    g = by_impl(npot, lambda r: True)
+    order = ["cpu", "efficient-unoptimized", "efficient", "thrust", "shared-efficient"]
+    line_chart("npot.svg", "Non-power-of-two sizes: the padding stair-step",
+               "Sizes on a linear grid. Separate session on a slower VM: compare shapes, not absolute values",
+               [(k, g[k]) for k in order if k in g], "Array size (elements)", "Time (ms, log scale)",
+               x_ticks=[1 << 20, 1 << 21, 1 << 22, 1 << 23, 10000000],
+               x_tick_label=lambda n: size_label(n) if n & (n - 1) == 0 else "10M")
+
     blocks = read("blocksize.csv")
     g = by_impl(blocks, lambda r: True, key="blockSize")
     order = ["naive", "efficient-unoptimized", "efficient", "efficient-compact", "shared-naive", "shared-efficient"]

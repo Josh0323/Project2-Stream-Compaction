@@ -328,6 +328,22 @@ void benchSort(int maxLog) {
     }
 }
 
+// Sizes on a linear grid rather than powers of two, to show the padding stair-step:
+// implementations that round n up to the next power of two jump at each boundary.
+void benchNonPowerOfTwo() {
+    const int maxN = 10000000;
+    std::vector<int> in(maxN), out(maxN);
+    fillRandom(in, maxN, 50);
+    const std::vector<std::string> want = {"cpu", "efficient", "efficient-unoptimized", "thrust", "shared-efficient"};
+    for (int n = 500000; n <= maxN; n += 250000) {
+        for (const ScanImpl &impl : kScans) {
+            if (std::find(want.begin(), want.end(), impl.name) == want.end()) continue;
+            Stats s = measure([&] { impl.run(n, out.data(), in.data()); }, impl.elapsed);
+            row("npot", impl.name, n, blockSizeOf(impl.name), 0, s);
+        }
+    }
+}
+
 void benchBlockSize(int log2n) {
     int n = 1 << log2n;
     std::vector<int> in(n), out(n);
@@ -384,6 +400,7 @@ int runBenchmarks(int argc, char *argv[]) {
     if (which == "scan" || which == "all") benchScan(maxLog);
     if (which == "compact" || which == "all") benchCompact(maxLog);
     if (which == "sort" || which == "all") benchSort(std::min(maxLog, 24));
+    if (which == "npot" || which == "all") benchNonPowerOfTwo();
     if (which == "blocksize" || which == "all") benchBlockSize(argc > 1 ? maxLog : 24);
     if (which == "banks" || which == "all") benchBanks(argc > 1 ? maxLog : 24);
     if (which == "occupancy" || which == "all") printOccupancy();
