@@ -115,11 +115,8 @@ see the stair-step below. All raw numbers are in `perf/data/scan.csv`.
   shared memory, and global memory is only read once and written once per element per level
   of the block recursion (4 levels at 64M with 256-element blocks: 64M → 262K sums → 1K → 1 block).
 * **Thrust is fastest at large sizes** (21× the CPU at 64M, 1.7× faster than the shared memory
-  scan). The Nsight Systems timeline shows why: a single `thrust::exclusive_scan` is one
-  `cudaMalloc` for CUB's temporary storage, **two** kernel launches (`DeviceScanInitKernel`,
-  `DeviceScanKernel`), a `cudaStreamSynchronize`, and a `cudaFree`. The work-efficient scan at 1M makes
-  40 launches and a memset. Thrust's kernels are also specialized per compute capability
-  (`SM_750` in the kernel names).
+  scan). It scans the whole array in two kernel launches where ours takes 2·log2(n); see
+  [Thrust analysis](#thrust-analysis) for the profiles.
 * **Thrust's step between 131K and 262K** (0.036 → 0.25 ms, also visible in the compaction and
   sort charts) appears to come from allocation. The timed region includes allocating and freeing CUB's
   temporary storage, which took 13 µs at 65K but 214 µs at 1M, about 70% of Thrust's measured time
@@ -173,30 +170,57 @@ so the work-efficient compaction is 5.5× faster than the best CPU version at 64
 than Thrust, because it pays for the global memory scan plus map, scatter, a device-to-device copy,
 and two synchronous readbacks for the count.
 
-### Kernel-level profiling (Nsight Compute)
+## Thrust analysis
 
-`ncu -k regex:<kernel> --launch-count 1 --section SpeedOfLight --section Occupancy --section LaunchStats`
-on the first (largest) launch of each kernel, at n = 2^22:
+### Nsight Systems: what `thrust::exclusive_scan` actually does
 
-| Kernel | Block | Regs/thread | Shared/block | Grid | Waves/SM | DRAM throughput | Compute throughput |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| `kernUpSweep` (ours, global) | 256 | 16 | 0 | 8192 | 51.2 | 80.96% | 6.42% |
-| `kernEfficientScanBlock` (ours, shared) | 128 | 24 | 1.05 KB | 16384 | 51.2 | 74.06% | 55.17% |
-| CUB `DeviceScanKernel` (Thrust) | 128 | 64 | 7.70 KB | 2185 | 6.83 | 79.25% | 22.35% |
+![Thrust on the Nsight Systems timeline](img/nsight/thrust-timeline.png)
 
-All three are **memory bound**: DRAM throughput sits at 74–81% of peak while compute throughput
-is far lower. That confirms the bandwidth argument above — there's no point micro-optimizing the
-arithmetic. `kernUpSweep` is the extreme case: one add per thread, 6.4% compute throughput,
-and it still saturates DRAM.
+At n = 2^20, the whole call is two kernels inside a 121.3 µs NVTX range: `DeviceScanInitKernel`
+(2.8 µs) sets up the tile state and `DeviceScanKernel` (42.1 µs) does the scan. The rest of the
+range is a `cudaMalloc`/`cudaFree` pair for CUB's temporary storage plus a
+`cudaStreamSynchronize` — Thrust allocates scratch space on every call, and at moderate sizes
+that allocation costs more than the scan.
 
-The interesting difference is **waves per SM**: our kernels launch 51.2 waves of blocks to cover
-the array, CUB only 6.83. CUB's kernel uses 64 registers and 7.7 KB of shared memory per block to
-process many elements per thread (a serial scan in registers, then a block scan — the technique
-from 39.2.5), so it moves the same data with far fewer blocks and one pass over memory. Our
-work-efficient scan re-reads and re-writes the whole array once per level instead.
+Two things sit outside the measured region and are worth noting: the host-to-device copies, and a
+`for_each::static_kernel` launch that zero-fills the output `device_vector` when it is constructed.
 
-Theoretical occupancy is 100% for all three. Occupancy isn't the limiter here; the number of
-passes over global memory is.
+The same timeline shows our work-efficient scan as a chain of separate `kernUpSweep` /
+`kernDownSweep` launches, growing from 2.8 µs to 27.6 µs as each level widens. The down-sweep
+half alone adds up to roughly 175 µs — four times Thrust's entire scan — because the array is
+re-read and re-written once per level.
+
+### Nsight Compute: why one pass is enough
+
+![kernUpSweep in Nsight Compute](img/nsight/ncu-kern-up-sweep.png)
+![CUB DeviceScanKernel in Nsight Compute](img/nsight/ncu-cub-scan.png)
+
+Both kernels profiled on the first launch at n = 2^22:
+
+| | `kernUpSweep` (ours) | CUB `DeviceScanKernel` |
+|---|---:|---:|
+| Covers | 1 of 44 levels | the entire scan |
+| Duration | 134.11 µs | 138.78 µs |
+| Grid × block | 8192 × 256 | 2185 × 128 |
+| Elements per thread | 1 | 15 |
+| Registers per thread | 16 | 64 |
+| Shared memory per block | 0 | 7.70 KB |
+| DRAM throughput | 87.47% | 85.49% |
+| Compute throughput | 6.45% | 22.60% |
+| Waves per SM | 51.20 | 6.83 |
+| Achieved occupancy | 96.42% | ~100% |
+
+The two kernels take nearly the same time and sit at the same memory-bandwidth roof, but one of
+them finishes the scan while the other finishes a forty-fourth of it. So the gap isn't that our
+kernel is poorly written or badly occupied — occupancy is ~100% in both cases. It is that CUB
+crosses global memory once where we cross it 2·log2(n) times.
+
+The launch statistics show how CUB manages that: 128 threads each handling 15 elements, using 64
+registers and 7.7 KB of shared memory, scan a 1,920-element tile entirely on-chip (2,185 blocks
+cover 2^22 elements). Spending registers and shared memory per thread buys a single pass over
+DRAM, and 6.83 waves per SM instead of 51.2. Our shared memory scan applies the same idea less aggressively — two elements per thread and
+1.05 KB of shared memory per block, reaching 74% DRAM throughput — but it needs only three levels
+at this size instead of 44, which is why it lands between the two.
 
 ## Extra credit, Part 5: why the "efficient" scan is slow
 
