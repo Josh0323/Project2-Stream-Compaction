@@ -3,15 +3,15 @@ CUDA Stream Compaction
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 2**
 
-* (TODO) YOUR NAME HERE
-  * (TODO) [LinkedIn](), [personal website](), [twitter](), etc.
+* Josh Kim
+  * [LinkedIn](https://www.linkedin.com/in/euikwang-kim), [personal website](https://euikwang.com)
 * Tested on: Ubuntu 22.04.5 LTS, Intel Xeon @ 2.30GHz (4 vCPUs), 15 GB RAM, NVIDIA Tesla T4 16 GB (Google Cloud VM), CUDA 13.3, driver 610.57
 
 ## Overview
 
-Scan (prefix sum) and stream compaction on the CPU and GPU, written from scratch in CUDA,
-plus the extra credit: an optimized work-efficient scan (Part 5), a GPU radix sort, and
-shared memory scans from GPU Gems 3 Chapter 39 tuned for this card.
+Scan (prefix sum) and stream compaction on the CPU and GPU in CUDA, plus the extra credit: an
+optimized work-efficient scan (Part 5), a GPU radix sort, and shared memory scans from GPU Gems 3
+Chapter 39 tuned for the T4.
 
 ### Features
 
@@ -20,35 +20,32 @@ shared memory scans from GPU Gems 3 Chapter 39 tuned for this card.
 * **Work-efficient GPU scan**: in-place up-sweep / down-sweep on a zero-padded power-of-two buffer.
 * **Work-efficient GPU compaction**: `kernMapToBoolean`, the device-side scan, `kernScatter`.
 * **Thrust**: `exclusive_scan`, plus `remove_if` compaction and `thrust::sort` as comparison points.
-* **Extra credit, Part 5**: the work-efficient scan only launches threads for nodes that do work
-  (`Efficient::scan`). The slides version is kept as `Efficient::scanUnoptimized` for comparison.
-* **Extra credit 1, radix sort** (`stream_compaction/radix.*`): stable LSD radix sort built on the
-  work-efficient scan. It handles negative numbers and skips bits that are the same in every element.
+* **Extra credit, Part 5**: the work-efficient scan launches threads only for nodes that do work
+  (`Efficient::scan`). The slides version is kept as `Efficient::scanUnoptimized`.
+* **Extra credit 1, radix sort** (`stream_compaction/radix.*`): stable LSD radix sort on the
+  work-efficient scan. Handles negative numbers and skips bits that are the same in every element.
 * **Extra credit 2, shared memory** (`stream_compaction/shared_memory.*`): GPU Gems Examples 39-1
-  and 39-2 in dynamic shared memory, joined across blocks with the block-sum method from 39.2.4,
-  with the bank-conflict-free layout from 39.2.3. Block size and bank count are tuned for the T4
-  using its occupancy numbers.
+  and 39-2 in dynamic shared memory, joined across blocks with the block-sum method (39.2.4) and
+  laid out to avoid bank conflicts (39.2.3). Block size and bank count are tuned for the T4.
 * **Testing**: the original tests plus shared memory, Thrust compaction, and radix sort tests; a
-  `--stress` mode that checks every implementation against `std::partial_sum` / `std::copy_if` /
+  `--stress` mode checking every implementation against `std::partial_sum` / `std::copy_if` /
   `std::sort` on 61 sizes (1 to 4M) and many launch configurations (3,897 checks); and a `--bench`
-  mode that writes the CSVs behind the charts below.
+  mode that writes the CSVs behind the charts.
 
 ## Implementation notes
 
-A few things that aren't obvious from the instructions:
-
 * **Nested timers throw.** `compactWithScan` can't call `CPU::scan`, and `Efficient::compact` can't
-  call `Efficient::scan`, because starting a timer that's already running throws. Both modules use
-  an untimed helper (`prefixSum`, `Efficient::scanDevice`). `scanDevice` also works directly on
-  device memory, so compaction and radix sort never round-trip through the host.
+  call `Efficient::scan`, because starting a running timer throws. Both use an untimed helper
+  (`prefixSum`, `Efficient::scanDevice`). `scanDevice` works on device memory, so compaction and
+  radix sort never round-trip through the host.
 * **Exclusive vs. inclusive.** The naive algorithm (and Example 39-1) computes an inclusive scan.
-  Uploading the input shifted right by one (`[0, x0, ..., x(n-2)]`) makes the result exclusive at no cost.
-* **Padding.** `cudaMalloc` doesn't clear memory, so the extra elements in the work-efficient
-  scan's power-of-two buffer are explicitly set to 0 before the timer starts.
+  Uploading the input shifted right by one (`[0, x0, ..., x(n-2)]`) makes it exclusive for free.
+* **Padding.** `cudaMalloc` doesn't clear memory, so the padding in the work-efficient scan's
+  power-of-two buffer is set to 0 before the timer starts.
 * **GPU Gems errata** (beyond the patch images in `INSTRUCTION.md`):
   * Example 39-1 writes `temp[pout*n+thid] += temp[pin*n+thid-offset]`. With ping-pong buffers
-    that adds to a value from two passes ago, and to uninitialized memory on the first pass. It
-    has to be `temp[pout] = temp[pin] + temp[pin - offset]`.
+    that adds to a value from two passes ago (uninitialized memory on the first pass). It has to
+    be `temp[pout] = temp[pin] + temp[pin - offset]`.
   * Listing 39-3's online `CONFLICT_FREE_OFFSET` shifts by `NUM_BANKS` instead of
     `LOG_NUM_BANKS` and has no parentheses, so `+` binds before `>>`. The intended offset is
     `(i >> LOG_NUM_BANKS) + (i >> (2 * LOG_NUM_BANKS))`.
@@ -56,9 +53,10 @@ A few things that aren't obvious from the instructions:
 
 ## Performance analysis
 
-All times are medians of 7 runs after a warm-up call, from a Release build, with
-host/device memory transfers left out of the timed region. Each implementation is measured by its
-own `PerformanceTimer` (`std::chrono` for CPU code, CUDA events for GPU code). Reproduce with:
+All times are medians of 7 runs after a warm-up call in a Release build, excluding host/device
+transfers. Each implementation uses its own `PerformanceTimer` (`std::chrono` on the CPU, CUDA
+events on the GPU). The test program takes `[log2 size]`, `--stress`, or
+`--bench <scan|compact|sort|npot|blocksize|banks|occupancy|all> [max log2 size]`. To reproduce:
 
 ```
 ./build/bin/cis5650_stream_compaction_test --bench scan 26 > perf/data/scan.csv   # also: compact, sort, blocksize, banks, occupancy
@@ -71,10 +69,10 @@ python3 perf/plot.py
 
 The T4 runs 32 threads per warp and 1024 threads per streaming multiprocessor (SM), with at most
 16 active blocks per SM (queried with `cudaDeviceGetAttribute` and
-`cudaOccupancyMaxActiveBlocksPerMultiprocessor`). Blocks of 16 or 32 threads can only fill 256 or
-512 of an SM's 1024 thread slots. That's why every global memory kernel slows down below 64: the
-naive scan takes 34.5 ms at 16 threads versus 14.2 ms at 64 and up. From 64 to 1024 the SMs
-are full, and global memory timings are flat to within noise.
+`cudaOccupancyMaxActiveBlocksPerMultiprocessor`). Blocks of 16 or 32 threads fill only 256 or
+512 of an SM's 1024 thread slots, so every global memory kernel slows down below 64: the naive
+scan takes 34.5 ms at 16 threads versus 14.2 ms at 64 and up. From 64 to 1024 the SMs are full and
+global memory timings are flat within noise.
 
 | Implementation | Chosen block size | Why |
 |---|---|---|
@@ -95,43 +93,39 @@ are full, and global memory timings are flat to within noise.
 | 16,777,216 | 13.49 | 14.24 | 10.84 | 7.68 | **0.86** | 1.19 | 1.15 |
 | 67,108,864 | 54.75 | 63.08 | 45.45 | 31.04 | **2.60** | 4.69 | 4.53 |
 
-Times in ms. The non-power-of-two sizes used here (2^k − 3) are within noise of the
-power-of-two numbers, because they pad to the *same* power of two. That's misleading on its own;
-see the stair-step below. All raw numbers are in `perf/data/scan.csv`.
+Times in ms; raw numbers are in `perf/data/scan.csv`. The non-power-of-two sizes here (2^k − 3)
+are within noise of the power-of-two numbers because they pad to the *same* power of two, which
+hides the stair-step shown below.
 
-**What's going on:**
-
-* **Small arrays: the CPU wins.** A cache-friendly loop takes nanoseconds per element, while
-  every GPU kernel launch costs tens of microseconds on the host no matter how little work it
-  does. The work-efficient scan makes 2·log2(n) launches (32 at 65K, see the Nsight numbers
-  below), so it has a ~0.06 ms floor. Below ~250K elements that overhead dominates, and every GPU
-  line is roughly flat.
-* **Large arrays: the bottleneck is global memory bandwidth, not computation.** The CPU and the
-  global memory scans grow linearly. The naive scan does n additions per level over log2(n)
-  levels, O(n log n) work that all goes through global memory. At 64M it's slower than
-  the CPU. The work-efficient scan does O(n) work but still touches global memory at every level,
-  so it only reaches 1.8× the CPU at 64M.
-* **Shared memory changes the picture** (12× the CPU at 64M): each block's whole tree runs in
-  shared memory, and global memory is only read once and written once per element per level
-  of the block recursion (4 levels at 64M with 256-element blocks: 64M → 262K sums → 1K → 1 block).
+* **Small arrays: the CPU wins.** A cache-friendly loop costs nanoseconds per element, while each
+  GPU kernel launch costs tens of microseconds on the host regardless of work. The work-efficient
+  scan makes 2·log2(n) launches (32 at 65K), giving it a ~0.06 ms floor. Below ~250K elements that
+  overhead dominates and every GPU line is roughly flat.
+* **Large arrays: global memory bandwidth, not computation, is the bottleneck.** The CPU and global
+  memory scans grow linearly. The naive scan does O(n log n) work (n additions per level over
+  log2(n) levels), all through global memory, and is slower than the CPU at 64M. The work-efficient
+  scan does O(n) work but still touches global memory every level, reaching only 1.8× the CPU at 64M.
+* **Shared memory changes the picture** (12× the CPU at 64M): each block's tree runs in shared
+  memory, and global memory is read and written once per element per level of the block recursion
+  (4 levels at 64M with 256-element blocks: 64M → 262K sums → 1K → 1 block).
 * **Thrust is fastest at large sizes** (21× the CPU at 64M, 1.7× faster than the shared memory
-  scan). It scans the whole array in two kernel launches where ours takes 2·log2(n); see
-  [Thrust analysis](#thrust-analysis) for the profiles.
+  scan). It scans the array in two kernel launches where ours takes 2·log2(n); see
+  [Thrust analysis](#thrust-analysis).
 * **Thrust's step between 131K and 262K** (0.036 → 0.25 ms, also visible in the compaction and
-  sort charts) appears to come from allocation. The timed region includes allocating and freeing CUB's
-  temporary storage, which took 13 µs at 65K but 214 µs at 1M, about 70% of Thrust's measured time
-  there (share of the host-side span of the call). The jump is most likely where that allocation stops being cheap. Reusing a
-  caching allocator would remove it.
-* **First call overhead.** In the test output, the first power-of-two run of each GPU method is
-  slower than the non-power-of-two run right after it. The trace shows the first launch in a
-  module paying `cuLibraryLoadData` / `cuLibraryGetKernel` to load and look up the kernel.
+  sort charts) appears to come from allocation. The timed region includes allocating and freeing
+  CUB's temporary storage, which took 13 µs at 65K but 214 µs at 1M, about 70% of Thrust's measured
+  time there (share of the host-side span of the call). The jump is most likely where that
+  allocation stops being cheap; a caching allocator would remove it.
+* **First call overhead.** In the test output, each GPU method's first power-of-two run is slower
+  than the non-power-of-two run after it. The trace shows the first launch in a module paying
+  `cuLibraryLoadData` / `cuLibraryGetKernel` to load and look up the kernel.
 
 ### Non-power-of-two sizes: the padding stair-step
 
 ![Non-power-of-two stair-step](img/perf/npot.svg)
 
-Both work-efficient scans round n up to the next power of two, so their cost is set by the padded
-size, not by n. Sweeping sizes on a linear grid shows flat runs with a doubling at each boundary:
+Both work-efficient scans round n up to the next power of two, so their cost follows the padded
+size, not n. A linear sweep of sizes shows flat runs with a doubling at each boundary:
 
 | n | Padded to | CPU | Efficient | Efficient (unopt.) | Shared efficient | Thrust |
 |---:|---:|---:|---:|---:|---:|---:|
@@ -141,15 +135,13 @@ size, not by n. Sweeping sizes on a linear grid shows flat runs with a doubling 
 
 Adding 250,000 elements (6%) exactly doubles the work-efficient scan's runtime, and the same
 happens at 8.25M → 8.5M (3.91 → 7.79 ms). Everything that doesn't pad — the CPU, Thrust, and the
-shared memory scan, which only pads the last block of each level — grows smoothly. Worst case, a
-padded scan does almost twice the necessary work; picking 2^k − 3 as "the" non-power-of-two test
-size hides that completely.
+shared memory scan, which only pads the last block of each level — grows smoothly. A padded scan
+can do almost twice the necessary work, and testing only 2^k − 3 hides that completely.
 
-> The numbers in this section come from a later session, when the VM (a preemptible instance)
-> was running with about 5× less memory bandwidth, so the CPU and Thrust values here are inflated
-> and **not** comparable to the tables above. The comparison that matters is within this one
-> session: the ratios at the boundary. GPU-side `efficient` measured the same in both sessions
-> (1.96 ms vs. 1.85 ms at 4M), which is why the stair-step itself is trustworthy.
+> These numbers come from a later session, when the VM (a preemptible instance) had about 5× less
+> memory bandwidth, so the CPU and Thrust values are inflated and **not** comparable to the tables
+> above. What matters is the ratio at the boundary within this session. GPU-side `efficient`
+> measured the same in both sessions (1.96 ms vs. 1.85 ms at 4M), so the stair-step is trustworthy.
 
 ### Stream compaction
 
@@ -162,13 +154,13 @@ size hides that completely.
 | 16,777,216 | 54.85 | 84.00 | 9.89 | **1.05** |
 | 67,108,864 | 218.1 | 337.8 | 39.52 | **2.79** |
 
-On the CPU, compaction is much slower than scan (218 ms vs. 55 ms at 64M) even though it's also
-one pass. With values in [0, 4), a quarter of the elements are zero at random, so the
-`if (idata[i] != 0)` branch mispredicts constantly. The version with scan makes three passes and
-touches two extra arrays, which makes it about 1.5× slower. On the GPU there's no branch penalty,
-so the work-efficient compaction is 5.5× faster than the best CPU version at 64M. It's still 14× slower
-than Thrust, because it pays for the global memory scan plus map, scatter, a device-to-device copy,
-and two synchronous readbacks for the count.
+On the CPU, compaction is much slower than scan (218 ms vs. 55 ms at 64M) despite also being one
+pass: with values in [0, 4), a random quarter of the elements are zero, so the
+`if (idata[i] != 0)` branch mispredicts constantly. The version with scan makes three passes over
+two extra arrays and is about 1.5× slower. The GPU has no branch penalty, so work-efficient
+compaction is 5.5× faster than the best CPU version at 64M. It's still 14× slower than Thrust,
+since it pays for the global memory scan plus map, scatter, a device-to-device copy, and two
+synchronous readbacks for the count.
 
 ## Thrust analysis
 
@@ -179,16 +171,16 @@ and two synchronous readbacks for the count.
 At n = 2^20, the whole call is two kernels inside a 121.3 µs NVTX range: `DeviceScanInitKernel`
 (2.8 µs) sets up the tile state and `DeviceScanKernel` (42.1 µs) does the scan. The rest of the
 range is a `cudaMalloc`/`cudaFree` pair for CUB's temporary storage plus a
-`cudaStreamSynchronize` — Thrust allocates scratch space on every call, and at moderate sizes
-that allocation costs more than the scan.
+`cudaStreamSynchronize`. Thrust allocates scratch space on every call, and at moderate sizes that
+costs more than the scan.
 
-Two things sit outside the measured region and are worth noting: the host-to-device copies, and a
-`for_each::static_kernel` launch that zero-fills the output `device_vector` when it is constructed.
+Outside the measured region are the host-to-device copies and a `for_each::static_kernel` launch
+that zero-fills the output `device_vector` on construction.
 
-The same timeline shows our work-efficient scan as a chain of separate `kernUpSweep` /
-`kernDownSweep` launches, growing from 2.8 µs to 27.6 µs as each level widens. The down-sweep
-half alone adds up to roughly 175 µs — four times Thrust's entire scan — because the array is
-re-read and re-written once per level.
+The same timeline shows our work-efficient scan as a chain of `kernUpSweep` / `kernDownSweep`
+launches, growing from 2.8 µs to 27.6 µs as each level widens. The down-sweep alone adds up to
+roughly 175 µs — four times Thrust's entire scan — because the array is re-read and re-written
+every level.
 
 ### Nsight Compute: why one pass is enough
 
@@ -210,29 +202,28 @@ Both kernels profiled on the first launch at n = 2^22:
 | Waves per SM | 51.20 | 6.83 |
 | Achieved occupancy | 96.42% | ~100% |
 
-The two kernels take nearly the same time and sit at the same memory-bandwidth roof, but one of
-them finishes the scan while the other finishes a forty-fourth of it. So the gap isn't that our
-kernel is poorly written or badly occupied — occupancy is ~100% in both cases. It is that CUB
-crosses global memory once where we cross it 2·log2(n) times.
+The two kernels take nearly the same time at the same memory-bandwidth roof, but one finishes the
+scan and the other finishes a forty-fourth of it. The gap isn't poor occupancy (~100% in both);
+it's that CUB crosses global memory once where we cross it 2·log2(n) times.
 
-The launch statistics show how CUB manages that: 128 threads each handling 15 elements, using 64
-registers and 7.7 KB of shared memory, scan a 1,920-element tile entirely on-chip (2,185 blocks
-cover 2^22 elements). Spending registers and shared memory per thread buys a single pass over
-DRAM, and 6.83 waves per SM instead of 51.2. Our shared memory scan applies the same idea less aggressively — two elements per thread and
-1.05 KB of shared memory per block, reaching 74% DRAM throughput — but it needs only three levels
-at this size instead of 44, which is why it lands between the two.
+The launch statistics show how: 128 threads each handling 15 elements, with 64 registers and
+7.7 KB of shared memory, scan a 1,920-element tile entirely on-chip (2,185 blocks cover 2^22
+elements). Spending registers and shared memory per thread buys a single pass over DRAM and 6.83
+waves per SM instead of 51.2. Our shared memory scan does the same less aggressively — two
+elements per thread and 1.05 KB of shared memory per block, reaching 74% DRAM throughput — but
+needs only three levels at this size instead of 44, which is why it lands between the two.
 
 ## Extra credit, Part 5: why the "efficient" scan is slow
 
 Written straight from the slides, each level launches a thread for **every** element, and each
-thread checks `k % stride == 0`. At level d only n / 2^(d+1) threads do anything. By the
-middle of the tree more than 99% of launched threads just take the modulo, fail, and exit,
-and every launch still costs work for all n threads.
+thread checks `k % stride == 0`. At level d only n / 2^(d+1) threads do anything, so by the middle
+of the tree over 99% of threads take the modulo, fail, and exit — yet every launch still pays for
+all n.
 
-The fix (`kernUpSweep` / `kernDownSweep` in `efficient.cu`) launches only `n >> (d+1)`
-threads per level. Thread `i` computes its node directly: `right = (i + 1) * stride - 1`,
-`left = right - stride / 2`. Deep levels, which have only a handful of nodes, launch a partial
-block instead of a full one. The algorithm and the data layout don't change.
+The fix (`kernUpSweep` / `kernDownSweep` in `efficient.cu`) launches only `n >> (d+1)` threads per
+level. Thread `i` computes its node directly: `right = (i + 1) * stride - 1`,
+`left = right - stride / 2`. Deep levels with a handful of nodes launch a partial block. The
+algorithm and data layout are unchanged.
 
 | n | CPU | Unoptimized | Optimized | Speedup |
 |---:|---:|---:|---:|---:|
@@ -240,23 +231,21 @@ block instead of a full one. The algorithm and the data layout don't change.
 | 16,777,216 | 13.49 | 10.84 | **7.68** | 1.4× |
 | 67,108,864 | 54.75 | 45.45 | **31.04** | 1.5× |
 
-The unoptimized version only beats the CPU above ~4M elements. The optimized one beats it from
-~512K. The gain is largest in the middle range, where launching n idle threads per level is a
-big share of the total.
+The unoptimized version beats the CPU only above ~4M elements; the optimized one from ~512K. The
+gain is largest in the middle range, where n idle threads per level are a big share of the total.
 
 ## Extra credit 1: radix sort
 
 `StreamCompaction::Radix::sort(int n, int *odata, const int *idata)` follows GPU Gems 3,
 39.3.3. For each bit: map the elements that go first (`e`), scan `e` with the work-efficient
 `scanDevice` to get `f`, compute `totalFalses = f[n-1] + e[n-1]`, and scatter each element to
-`f[i]` or `i - f[i] + totalFalses`. `e` is recomputed inside the scatter kernel instead of
-being stored.
+`f[i]` or `i - f[i] + totalFalses`. The scatter kernel recomputes `e` instead of storing it.
 
 * **Negative numbers**: for bit 31 the order flips (1s go first), so the result matches
   `std::sort` for any `int`. The sign bit is always the last pass.
-* **Skipping useless passes**: one GPU reduction computes the OR of `x[i] ^ x[0]`, which gives
-  exactly the bits that differ somewhere in the array. A bit that's the same everywhere can't
-  change the order, so its pass is skipped. Values in [0, 1000) take 10 passes instead of 32.
+* **Skipping useless passes**: one GPU reduction computes the OR of `x[i] ^ x[0]`, exactly the
+  bits that differ somewhere in the array. A bit that's the same everywhere can't change the
+  order, so its pass is skipped. Values in [0, 1000) take 10 passes instead of 32.
 
 ```cpp
 #include <stream_compaction/radix.h>
@@ -286,10 +275,10 @@ Example from the test program (n = 256, full int range):
 | 1,048,576 | any int | 88.8 | 17.8 | **0.90** |
 | 8,388,608 | any int | 801.6 | 146.7 | **2.52** |
 
-The radix sort is 5–11× faster than `std::sort` for large arrays (more for small value ranges, which need fewer passes), but far slower than
-`thrust::sort` (CUB's radix sort). Every pass pays for a full global memory scan plus two
-synchronous readbacks, while CUB does whole passes in a few kernels. (The full-range benchmark
-stops at 8M; the 16M run was cut off when the VM restarted.)
+The radix sort is 5–11× faster than `std::sort` for large arrays (more for small value ranges,
+which need fewer passes) but far slower than `thrust::sort` (CUB's radix sort). Each pass pays for
+a full global memory scan plus two synchronous readbacks, while CUB does whole passes in a few
+kernels. (The full-range benchmark stops at 8M; the 16M run was cut off by a VM restart.)
 
 ## Extra credit 2: shared memory scans and hardware tuning
 
@@ -297,8 +286,8 @@ stops at 8M; the 16M run was cut off when the VM restarted.)
 thread block's whole scan in dynamic shared memory (`extern __shared__ int temp[]`, sized by the
 third launch parameter) with `__syncthreads()` between levels. To handle any n (39.2.4), each
 level scans all blocks in one launch and writes each block's total to a sums array. The sums are
-scanned the same way until they fit in one block, and then one add kernel per level applies each
-block's offset. Every level's buffers are allocated before the timer starts.
+scanned the same way until they fit in one block, then one add kernel per level applies each
+block's offset. All buffers are allocated before the timer starts.
 
 **Occupancy.** Measured on the T4 with `cudaOccupancyMaxActiveBlocksPerMultiprocessor`:
 
@@ -307,30 +296,29 @@ block's offset. Every level's buffers are allocated before the timer starts.
 | Max active blocks per SM | 16 | 8 | 4 | 2 | 1 |
 
 The T4 has 64 KB of shared memory per SM and allows 48 KB per block. These kernels use only 2 ints
-per thread (8 KB per block at 1024 threads), so shared memory never becomes the limit. The limit
-is warps: 1024 threads per SM over 32-thread warps. Blocks of 64 or more fill the SM, and larger
-blocks just mean deeper trees and more `__syncthreads()` rounds per block (log2 B). 128 threads
-turned out best for both kernels (about 1.19 ms at 16M, versus 3.0–3.5 ms at 16 and 1.6–1.7 ms at 1024).
-If a kernel asked for the full 48 KB per block, occupancy would drop to 1 block per SM at any block size.
+per thread (8 KB per block at 1024 threads), so shared memory is never the limit. Warps are: 1024
+threads per SM over 32-thread warps. Blocks of 64 or more fill the SM, and larger blocks only add
+tree depth and `__syncthreads()` rounds per block (log2 B). 128 threads was best for both kernels
+(about 1.19 ms at 16M, versus 3.0–3.5 ms at 16 and 1.6–1.7 ms at 1024). A kernel asking for the
+full 48 KB per block would drop to 1 active block per SM at any block size.
 
-**Bank conflicts (39.2.3).** Threads that stride through the tree at the same level access
-addresses in the same shared memory bank, and those accesses get serialized. The fix loads each
-thread's two elements from the two halves of the block instead of adjacent slots, and leaves a
-gap every `NUM_BANKS` slots (`bankSlot` in `shared_memory.cu`). The chapter used 16 banks, the
-half-warp of 8-Series cards. This card's warp is 32, so I swept the bank count:
+**Bank conflicts (39.2.3).** Threads striding through the tree at the same level access addresses
+in the same shared memory bank, and those accesses are serialized. The fix loads each thread's two
+elements from opposite halves of the block instead of adjacent slots and leaves a gap every
+`NUM_BANKS` slots (`bankSlot` in `shared_memory.cu`). The chapter used 16 banks, the half-warp of
+8-Series cards. The T4's warp is 32, so I swept the bank count:
 
 ![Bank count sweep](img/perf/banks.svg)
 
-32 banks (`logNumBanks = 5`) is the fastest setting at every block size. At 128 threads it takes
-1.147 ms, versus 1.598 ms for the original Example 39-2 layout: **28% faster** from
-indexing alone. 16 banks gets most of the way there (1.187 ms), and 128 banks starts to hurt
-again, presumably because a gap only every 128 slots is too sparse to push neighboring threads' accesses into different banks.
+32 banks (`logNumBanks = 5`) is fastest at every block size. At 128 threads it takes 1.147 ms
+versus 1.598 ms for the original Example 39-2 layout: **28% faster** from indexing alone. 16 banks
+gets most of the way (1.187 ms), and 128 banks starts to hurt again, presumably because a gap every
+128 slots is too sparse to push neighboring threads' accesses into different banks.
 
 ## Test output
 
-`./build/bin/cis5650_stream_compaction_test` with the default `SIZE = 1 << 8`. Tests added beyond
-the original ones: shared memory scans, Thrust compaction, and the whole radix sort section.
-`--stress` is also new:
+`./build/bin/cis5650_stream_compaction_test` with the default `SIZE = 1 << 8`. New tests: shared
+memory scans, Thrust compaction, the radix sort section, and `--stress`:
 
 ```
 Stress testing 61 sizes (largest 4194311)...
@@ -439,11 +427,7 @@ Stress testing 61 sizes (largest 4194311)...
 
 ## Build notes
 
-* **CMake changes beyond the source lists:** `stream_compaction/CMakeLists.txt` had
-  `set_target_properties(stream_compaction} ...` in the branch for CMake < 3.23. The stray `}`
-  makes configure fail on CMake 3.22 (Ubuntu 22.04's version), so I removed it. Everything else
-  is additions to source lists: `radix.*`, `shared_memory.*`, and `src/perf.*`.
-* CUDA 13 moved Thrust and CUB to `include/cccl`. nvcc still finds them, so no changes were needed.
-* `system("pause")` only runs on Windows now. On Linux it just printed `sh: pause: not found`.
-* Command line: `cis5650_stream_compaction_test [log2 size]`, `--stress`, or
-  `--bench <scan|compact|sort|blocksize|banks|occupancy|all> [max log2 size]`.
+* **CMake:** removed a stray `}` in `set_target_properties(stream_compaction} ...` (the
+  CMake < 3.23 branch of `stream_compaction/CMakeLists.txt`), which broke configure on CMake 3.22.
+  Otherwise only source list additions: `radix.*`, `shared_memory.*`, and `src/perf.*`.
+* `system("pause")` now runs only on Windows; on Linux it printed `sh: pause: not found`.
